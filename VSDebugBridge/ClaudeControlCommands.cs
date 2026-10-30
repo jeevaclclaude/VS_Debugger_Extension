@@ -23,6 +23,7 @@ namespace VSDebugBridge
         private const int CmdStopClaudeDebug = 0x0104;
         private const int CmdMarkStepOver = 0x0105;
         private const int CmdUnmarkStepOver = 0x0106;
+        private const int CmdSendSelection = 0x0107;
 
         private readonly BridgeServer _server;
 
@@ -36,6 +37,7 @@ namespace VSDebugBridge
             AddCommand(commandService, CmdTakeOverDebug, BridgeServer.ControlMode.UserDriving);
             AddCommand(commandService, CmdStopClaudeDebug, BridgeServer.ControlMode.EmergencyStop);
             AddStepFilterCommands(commandService);
+            AddSendSelectionCommand(commandService);
         }
 
         private void AddCommand(OleMenuCommandService commandService, int cmdId, BridgeServer.ControlMode mode)
@@ -88,6 +90,21 @@ namespace VSDebugBridge
                 cmd.Enabled = alreadyMarked;
             };
             commandService.AddCommand(unmarkCmd);
+        }
+
+        private void AddSendSelectionCommand(OleMenuCommandService commandService)
+        {
+            var cmdId = new CommandID(CommandSet, CmdSendSelection);
+            var cmd = new OleMenuCommand((sender, e) =>
+            {
+                _server.SaveSelection();
+            }, cmdId);
+            cmd.BeforeQueryStatus += (sender, e) =>
+            {
+                ((OleMenuCommand)sender).Enabled = true;
+                ((OleMenuCommand)sender).Visible = true;
+            };
+            commandService.AddCommand(cmd);
         }
 
         internal static async Task InitializeAsync(AsyncPackage package, BridgeServer server)

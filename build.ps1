@@ -97,7 +97,8 @@ Write-Host "[2/3] Installing MCP server dependencies..." -ForegroundColor Yellow
 `$mcpDir = Join-Path `$here "mcp-server"
 if (-not (Test-Path `$mcpDir)) { throw "mcp-server\ folder not found next to this script." }
 
-`$node = (Get-Command node -ErrorAction SilentlyContinue)?.Source
+`$nodCmd = Get-Command node -ErrorAction SilentlyContinue
+`$node = if (`$nodCmd) { `$nodCmd.Source } else { `$null }
 if (-not `$node) { throw "Node.js not found. Install from https://nodejs.org (no admin needed with the user installer)." }
 Write-Host "Node: `$node" -ForegroundColor Gray
 
@@ -112,7 +113,8 @@ Write-Host "Dependencies installed." -ForegroundColor Green
 Write-Host ""
 Write-Host "[3/3] Registering MCP server with Claude Code..." -ForegroundColor Yellow
 
-`$claude = (Get-Command claude -ErrorAction SilentlyContinue)?.Source
+`$claudeCmd = Get-Command claude -ErrorAction SilentlyContinue
+`$claude = if (`$claudeCmd) { `$claudeCmd.Source } else { `$null }
 if (-not `$claude) {
     Write-Host "WARNING: claude CLI not found in PATH." -ForegroundColor Yellow
     Write-Host "Run this manually after installing Claude Code CLI:" -ForegroundColor Yellow

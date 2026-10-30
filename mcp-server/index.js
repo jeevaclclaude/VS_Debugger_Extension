@@ -875,6 +875,16 @@ const TOOLS = [
       required: ["frameIndex"],
     },
   },
+  {
+    name: "get_vs_selection",
+    description:
+      "Read the code the user most recently sent from Visual Studio via right-click → " +
+      "'Send Selection to Claude Code'. Returns the selected text, file path, and line range. " +
+      "Use this when the user says 'look at this', 'explain this', 'what's wrong here', or " +
+      "pastes no code but clearly wants you to inspect something they highlighted in VS. " +
+      "If nothing has been sent yet, returns available:false with instructions.",
+    inputSchema: { type: "object", properties: {} },
+  },
   // ------- END new tools -------
   {
     name: "save_debug_journal",
@@ -1119,6 +1129,9 @@ async function dispatchTool(name, args) {
 
     case "set_active_frame":
       return bridgeCall("POST", "/debug/frame/set", { frameIndex: args.frameIndex });
+
+    case "get_vs_selection":
+      return bridgeCall("GET", "/debug/selection");
 
     case "list_vs_instances": {
       const instances = discoverInstances();

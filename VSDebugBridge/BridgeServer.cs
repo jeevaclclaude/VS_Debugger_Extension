@@ -368,6 +368,16 @@ namespace VSDebugBridge
             return pos.HasValue && IsStepFilter(pos.Value.file, pos.Value.line);
         }
 
+        internal string GetCurrentSelection()
+        {
+            try
+            {
+                var sel = _dte.ActiveDocument?.Selection as EnvDTE.TextSelection;
+                return sel?.Text;
+            }
+            catch { return null; }
+        }
+
         internal (string file, int line)? GetCurrentEditorPosition()
         {
             try
@@ -379,6 +389,44 @@ namespace VSDebugBridge
                 return (doc.FullName, sel.CurrentLine);
             }
             catch { return null; }
+        }
+
+        // Selection saved by "Send Selection to Claude Code" right-click command.
+        private string _lastSelectionJson;
+        private readonly object _selectionLock = new object();
+
+        internal void SaveSelection()
+        {
+            try
+            {
+                var doc = _dte.ActiveDocument;
+                if (doc == null) return;
+                var sel = doc.Selection as EnvDTE.TextSelection;
+                if (sel == null || string.IsNullOrEmpty(sel.Text)) return;
+
+                var payload = JsonConvert.SerializeObject(new
+                {
+                    file = doc.FullName,
+                    fileName = Path.GetFileName(doc.FullName),
+                    startLine = sel.TopLine,
+                    endLine = sel.BottomLine,
+                    text = sel.Text,
+                    capturedAt = DateTime.UtcNow.ToString("o")
+                });
+                lock (_selectionLock) { _lastSelectionJson = payload; }
+
+                try { GetOrCreateClaudeLogPane()?.OutputString($"[Selection sent] {Path.GetFileName(doc.FullName)} lines {sel.TopLine}–{sel.BottomLine}{Environment.NewLine}"); } catch { }
+            }
+            catch { }
+        }
+
+        private object GetLastSelection()
+        {
+            string json;
+            lock (_selectionLock) { json = _lastSelectionJson; }
+            if (json == null)
+                return new { available = false, note = "No selection sent yet. Right-click selected code in VS and choose 'Send Selection to Claude Code'." };
+            return new { available = true, selection = JObject.Parse(json) };
         }
 
         private object ListStepFilters()
@@ -1080,6 +1128,9 @@ namespace VSDebugBridge
 
                 case "POST /debug/frame/set":
                     return await OnUiAsync(() => SetActiveFrame((int?)json["frameIndex"] ?? throw new BridgeException(400, "frameIndex is required")));
+
+                case "GET /debug/selection":
+                    return GetLastSelection();
 
                 default:
                     throw new BridgeException(404, $"Unknown endpoint: {method} {path}");

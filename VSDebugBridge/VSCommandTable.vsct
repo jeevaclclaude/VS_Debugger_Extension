@@ -50,6 +50,7 @@
         <Strings>
           <ButtonText>Let Claude Debug</ButtonText>
           <CommandName>Let Claude Debug</CommandName>
+          <ToolTipText>Give Claude full control — Claude can set breakpoints, step, continue, and inspect variables. Use this to start a Claude-driven debug session.</ToolTipText>
         </Strings>
       </Button>
 
@@ -58,6 +59,7 @@
         <Strings>
           <ButtonText>Let Claude Watch Debug</ButtonText>
           <CommandName>Let Claude Watch Debug</CommandName>
+          <ToolTipText>Read-only mode — Claude can inspect locals, call stack, and evaluate expressions, but cannot step or set breakpoints. You drive, Claude observes.</ToolTipText>
         </Strings>
       </Button>
 
@@ -66,6 +68,7 @@
         <Strings>
           <ButtonText>Pause Claude Debug</ButtonText>
           <CommandName>Pause Claude Debug</CommandName>
+          <ToolTipText>Temporarily pause Claude — read-only access only. Useful when you want to inspect something yourself without Claude interfering.</ToolTipText>
         </Strings>
       </Button>
 
@@ -74,6 +77,7 @@
         <Strings>
           <ButtonText>Take Over Debug</ButtonText>
           <CommandName>Take Over Debug</CommandName>
+          <ToolTipText>You take the wheel — Claude is blocked from all mutating actions (step, continue, breakpoints). Claude can still read state. Switch to 'Let Claude Debug' to hand control back.</ToolTipText>
         </Strings>
       </Button>
 
@@ -82,6 +86,7 @@
         <Strings>
           <ButtonText>Stop Claude Debug</ButtonText>
           <CommandName>Stop Claude Debug</CommandName>
+          <ToolTipText>Emergency stop — blocks ALL Claude actions immediately, including reads. Claude is locked out until you click 'Let Claude Debug' to re-arm.</ToolTipText>
         </Strings>
       </Button>
 
@@ -89,19 +94,31 @@
            (not inside the submenu) so they appear immediately on right-click.
            BeforeQueryStatus toggles which one is visible based on whether the
            cursor line is already marked. Only one is ever visible at a time. -->
+      <!-- Send Selection + Step filter commands — inside the Claude Debug Control submenu -->
+      <Button guid="guidClaudeControlCmdSet" id="cmdSendSelection" priority="0x0190" type="Button">
+        <Parent guid="guidClaudeControlCmdSet" id="ClaudeControlMenuGroup"/>
+        <Strings>
+          <ButtonText>Send Selection to Claude Code</ButtonText>
+          <CommandName>Send Selection to Claude Code</CommandName>
+          <ToolTipText>Select code in the editor, then click this — Claude reads it via get_vs_selection to explain, review, or debug it.</ToolTipText>
+        </Strings>
+      </Button>
+
       <Button guid="guidClaudeControlCmdSet" id="cmdMarkStepOver" priority="0x0200" type="Button">
-        <Parent guid="guidClaudeControlCmdSet" id="ClaudeControlContextGroup"/>
+        <Parent guid="guidClaudeControlCmdSet" id="ClaudeControlMenuGroup"/>
         <Strings>
           <ButtonText>Mark as Step Over for Claude</ButtonText>
           <CommandName>Mark as Step Over for Claude</CommandName>
+          <ToolTipText>Tell Claude to skip this line when stepping — useful for boilerplate, logging, or utility methods you don't want Claude to step into. A glyph appears in the margin.</ToolTipText>
         </Strings>
       </Button>
 
       <Button guid="guidClaudeControlCmdSet" id="cmdUnmarkStepOver" priority="0x0201" type="Button">
-        <Parent guid="guidClaudeControlCmdSet" id="ClaudeControlContextGroup"/>
+        <Parent guid="guidClaudeControlCmdSet" id="ClaudeControlMenuGroup"/>
         <Strings>
           <ButtonText>Unmark Step Over for Claude</ButtonText>
           <CommandName>Unmark Step Over for Claude</CommandName>
+          <ToolTipText>Remove the step-over marker from this line — Claude will step into it normally again.</ToolTipText>
         </Strings>
       </Button>
     </Buttons>
@@ -135,6 +152,7 @@
       <IDSymbol name="cmdPauseClaudeDebug" value="0x0102"/>
       <IDSymbol name="cmdTakeOverDebug" value="0x0103"/>
       <IDSymbol name="cmdStopClaudeDebug" value="0x0104"/>
+      <IDSymbol name="cmdSendSelection" value="0x0107"/>
       <IDSymbol name="cmdMarkStepOver" value="0x0105"/>
       <IDSymbol name="cmdUnmarkStepOver" value="0x0106"/>
     </GuidSymbol>
