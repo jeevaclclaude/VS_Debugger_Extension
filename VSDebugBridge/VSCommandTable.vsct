@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!--
+    Phase 4.5a — control-mode switching. Lets the user change BridgeServer's
+    ControlMode without ever giving Claude a path to do so itself (Claude can
+    only read the mode via GET /control/mode; these commands call
+    BridgeServer.SetControlModeFromUi directly, an in-process method call that
+    is never exposed over the HTTP bridge MCP talks to). See features.md
+    "Collaboration Model" for the full design.
+
+    v1 simplification: "Let Claude Debug" doubles as the re-arm action from
+    emergency-stop (same Driver mode either way) rather than a separate
+    "Resume Claude Debug" button with dynamic slot relabeling — functionally
+    identical, lower-risk to implement correctly. No separate toolbar yet
+    (menu + keyboard shortcuts only) — deferred along with the clickable
+    status-bar mode picker.
+  -->
+
+  <Extern href="stdidcmd.h"/>
+  <Extern href="vsshlids.h"/>
+
+  <Commands package="guidVSDebugBridgePackage">
+    <Menus>
+      <Menu guid="guidClaudeControlCmdSet" id="ClaudeControlMenu" priority="0x0600" type="Menu">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_DEBUG"/>
+        <Strings>
+          <ButtonText>Claude Debug Control</ButtonText>
+          <CommandName>Claude Debug Control</CommandName>
+        </Strings>
+      </Menu>
+    </Menus>
+
+    <Groups>
+      <Group guid="guidClaudeControlCmdSet" id="ClaudeControlMenuGroup" priority="0x0100">
+        <Parent guid="guidClaudeControlCmdSet" id="ClaudeControlMenu"/>
+      </Group>
+      <!-- A second group, parented to the code editor's right-click context
+           menu, so the SAME "Claude Debug Control" submenu (and therefore the
+           same 5 commands/handlers below — nothing is duplicated) also shows
+           up there, not just under the top Debug menu. -->
+      <Group guid="guidClaudeControlCmdSet" id="ClaudeControlContextGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN"/>
+      </Group>
+    </Groups>
+
+    <Buttons>
+      <Button guid="guidClaudeControlCmdSet" id="cmdLetClaudeDebug" priority="0x0100" type="Button">
+        <Parent guid="guidClaudeControlCmdSet" id="ClaudeControlMenuGroup"/>
+        <Strings>
+          <ButtonText>Let Claude Debug</ButtonText>
+          <CommandName>Let Claude Debug</CommandName>
+        </Strings>
+      </Button>
+
+      <Button guid="guidClaudeControlCmdSet" id="cmdLetClaudeWatchDebug" priority="0x0101" type="Button">
+        <Parent guid="guidClaudeControlCmdSet" id="ClaudeControlMenuGroup"/>
+        <Strings>
+          <ButtonText>Let Claude Watch Debug</ButtonText>
+          <CommandName>Let Claude Watch Debug</CommandName>
+        </Strings>
+      </Button>
+
+      <Button guid="guidClaudeControlCmdSet" id="cmdPauseClaudeDebug" priority="0x0102" type="Button">
+        <Parent guid="guidClaudeControlCmdSet" id="ClaudeControlMenuGroup"/>
+        <Strings>
+          <ButtonText>Pause Claude Debug</ButtonText>
+          <CommandName>Pause Claude Debug</CommandName>
+        </Strings>
+      </Button>
+
+      <Button guid="guidClaudeControlCmdSet" id="cmdTakeOverDebug" priority="0x0103" type="Button">
+        <Parent guid="guidClaudeControlCmdSet" id="ClaudeControlMenuGroup"/>
+        <Strings>
+          <ButtonText>Take Over Debug</ButtonText>
+          <CommandName>Take Over Debug</CommandName>
+        </Strings>
+      </Button>
+
+      <Button guid="guidClaudeControlCmdSet" id="cmdStopClaudeDebug" priority="0x0104" type="Button">
+        <Parent guid="guidClaudeControlCmdSet" id="ClaudeControlMenuGroup"/>
+        <Strings>
+          <ButtonText>Stop Claude Debug</ButtonText>
+          <CommandName>Stop Claude Debug</CommandName>
+        </Strings>
+      </Button>
+
+      <!-- Step-filter commands — parented directly to the context menu group
+           (not inside the submenu) so they appear immediately on right-click.
+           BeforeQueryStatus toggles which one is visible based on whether the
+           cursor line is already marked. Only one is ever visible at a time. -->
+      <Button guid="guidClaudeControlCmdSet" id="cmdMarkStepOver" priority="0x0200" type="Button">
+        <Parent guid="guidClaudeControlCmdSet" id="ClaudeControlContextGroup"/>
+        <Strings>
+          <ButtonText>Mark as Step Over for Claude</ButtonText>
+          <CommandName>Mark as Step Over for Claude</CommandName>
+        </Strings>
+      </Button>
+
+      <Button guid="guidClaudeControlCmdSet" id="cmdUnmarkStepOver" priority="0x0201" type="Button">
+        <Parent guid="guidClaudeControlCmdSet" id="ClaudeControlContextGroup"/>
+        <Strings>
+          <ButtonText>Unmark Step Over for Claude</ButtonText>
+          <CommandName>Unmark Step Over for Claude</CommandName>
+        </Strings>
+      </Button>
+    </Buttons>
+  </Commands>
+
+  <CommandPlacements>
+    <!-- Same submenu, second location: code editor right-click context menu.
+         No new buttons/handlers — this just re-parents the existing
+         ClaudeControlMenu (and everything inside it) into the new context
+         group above, alongside its original placement under Debug. -->
+    <CommandPlacement guid="guidClaudeControlCmdSet" id="ClaudeControlMenu" priority="0x0600">
+      <Parent guid="guidClaudeControlCmdSet" id="ClaudeControlContextGroup"/>
+    </CommandPlacement>
+  </CommandPlacements>
+
+  <KeyBindings>
+    <KeyBinding guid="guidClaudeControlCmdSet" id="cmdLetClaudeDebug" editor="guidVSStd97" key1="1" mod1="Control Shift Alt"/>
+    <KeyBinding guid="guidClaudeControlCmdSet" id="cmdPauseClaudeDebug" editor="guidVSStd97" key1="2" mod1="Control Shift Alt"/>
+    <KeyBinding guid="guidClaudeControlCmdSet" id="cmdStopClaudeDebug" editor="guidVSStd97" key1="3" mod1="Control Shift Alt"/>
+  </KeyBindings>
+
+  <Symbols>
+    <GuidSymbol name="guidVSDebugBridgePackage" value="{8B5C6E1A-3D2F-4A7C-9F8E-1B6D4A2E5C90}"/>
+
+    <GuidSymbol name="guidClaudeControlCmdSet" value="{3F1A7B2E-5C9D-4E6A-8B3F-2D7E4A9C6F11}">
+      <IDSymbol name="ClaudeControlMenu" value="0x1000"/>
+      <IDSymbol name="ClaudeControlMenuGroup" value="0x1020"/>
+      <IDSymbol name="ClaudeControlContextGroup" value="0x1021"/>
+      <IDSymbol name="cmdLetClaudeDebug" value="0x0100"/>
+      <IDSymbol name="cmdLetClaudeWatchDebug" value="0x0101"/>
+      <IDSymbol name="cmdPauseClaudeDebug" value="0x0102"/>
+      <IDSymbol name="cmdTakeOverDebug" value="0x0103"/>
+      <IDSymbol name="cmdStopClaudeDebug" value="0x0104"/>
+      <IDSymbol name="cmdMarkStepOver" value="0x0105"/>
+      <IDSymbol name="cmdUnmarkStepOver" value="0x0106"/>
+    </GuidSymbol>
+  </Symbols>
+
+</CommandTable>

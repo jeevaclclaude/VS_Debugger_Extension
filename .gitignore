@@ -1,0 +1,22 @@
+# Build outputs
+VSDebugBridge/bin/
+VSDebugBridge/obj/
+dist/
+
+# Node
+mcp-server/node_modules/
+
+# Debug journal / step filters (per-developer, not shared)
+.claude-debug-journal.json
+.claude-step-filters.json
+
+# VS
+.vs/
+*.user
+*.suo
+VSDebugBridge/Backup*/
+VSDebugBridge/UpgradeLog*.htm
+docs/*.docx
+
+# Archives
+*.zip
